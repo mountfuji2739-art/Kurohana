@@ -1,0 +1,2054 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="description" content="A personal knowledge hub for programming, cybersecurity, Japanese, creative writing, music and sports." />
+  <title>Kurohana — Personal Knowledge Hub</title>
+
+  <style>
+    /* =========================================================
+       01. DESIGN TOKENS
+    ========================================================= */
+    :root {
+      color-scheme: dark;
+      --bg: #0b0d12;
+      --surface: #11141c;
+      --surface-2: #171b25;
+      --surface-3: #202533;
+      --text: #f3f5fb;
+      --muted: #9ba4b8;
+      --line: rgba(255,255,255,.09);
+      --accent: #b6a0ff;
+      --accent-2: #78e4c5;
+      --danger: #ff8291;
+      --warning: #f3cb7b;
+      --radius: 20px;
+      --radius-sm: 12px;
+      --sidebar-width: 248px;
+      --content-width: 1180px;
+      --shadow: 0 18px 55px rgba(0,0,0,.22);
+      --transition: 180ms ease;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 75% -10%, rgba(126,104,219,.12), transparent 38%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible,
+    textarea:focus-visible, select:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--accent-2);
+      outline-offset: 3px;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; }
+    ::selection { background: var(--accent); color: #100e18; }
+
+    .app-shell { min-height: 100vh; }
+
+    /* =========================================================
+       02. SIDEBAR AND NAVIGATION
+    ========================================================= */
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      width: var(--sidebar-width);
+      padding: 28px 18px;
+      background: rgba(13,15,22,.96);
+      border-right: 1px solid var(--line);
+      backdrop-filter: blur(20px);
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px 30px;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      color: #171222;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    .brand-name { font-size: 17px; font-weight: 800; letter-spacing: 2px; }
+    .brand-caption { display: block; color: var(--muted); font-size: 10px; letter-spacing: 1.4px; }
+
+    .nav-label {
+      margin: 15px 10px 8px;
+      color: #697286;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+
+    .nav-list { display: grid; gap: 5px; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      transition: var(--transition);
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text);
+      background: var(--surface-2);
+      border-color: var(--line);
+    }
+
+    .nav-icon { width: 24px; text-align: center; font-size: 17px; }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 20px 10px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 12px rgba(120,228,197,.5);
+    }
+
+    .mobile-topbar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 25;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(11,13,18,.93);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    /* =========================================================
+       03. MAIN LAYOUT
+    ========================================================= */
+    .main {
+      min-height: 100vh;
+      margin-left: var(--sidebar-width);
+      padding: 30px clamp(18px, 4vw, 54px) 60px;
+    }
+
+    .main-inner { width: 100%; max-width: var(--content-width); margin: auto; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .breadcrumbs button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .breadcrumbs button:hover { color: var(--accent-2); }
+    .crumb-separator { opacity: .45; }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+    .search-wrap { position: relative; width: min(310px, 34vw); }
+
+    .search-input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      color: var(--text);
+      background: var(--surface);
+      transition: border var(--transition);
+    }
+
+    .search-input:focus { border-color: rgba(182,160,255,.6); }
+    .search-symbol { position: absolute; top: 8px; left: 13px; color: var(--muted); }
+
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .icon-button:hover { border-color: var(--accent); }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent-2);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 16px; font-size: clamp(32px, 4vw, 52px); line-height: 1.12; letter-spacing: -1.8px; }
+    h2 { margin-bottom: 8px; font-size: clamp(21px, 2vw, 28px); letter-spacing: -.5px; }
+    h3 { margin-bottom: 8px; font-size: 17px; }
+    p { color: var(--muted); }
+    .lead { max-width: 720px; font-size: 16px; line-height: 1.85; }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 40px 0 18px;
+    }
+
+    .section-heading p { margin: 0; font-size: 13px; }
+
+    .hero {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      padding: clamp(26px, 5vw, 58px);
+      border: 1px solid rgba(182,160,255,.19);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 90% 20%, rgba(182,160,255,.19), transparent 30%),
+        linear-gradient(120deg, #171622, #121820 75%);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      position: absolute;
+      z-index: -1;
+      right: 6%;
+      bottom: -100px;
+      width: 260px;
+      height: 260px;
+      border: 1px solid rgba(182,160,255,.15);
+      border-radius: 50%;
+      box-shadow: 0 0 0 35px rgba(182,160,255,.025),
+                  0 0 0 70px rgba(182,160,255,.02);
+      content: "";
+    }
+
+    .hero h1 { max-width: 680px; }
+    .hero h1 span { color: var(--accent); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 43px;
+      padding: 10px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform var(--transition), border var(--transition), background var(--transition);
+    }
+
+    .button:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .button.primary { border-color: transparent; background: var(--accent); color: #171222; }
+    .button.primary:hover { background: #c7b7ff; }
+    .button.success { color: var(--accent-2); }
+    .button.danger { color: var(--danger); }
+    .button.small { min-height: 34px; padding: 6px 11px; font-size: 12px; }
+
+    .grid { display: grid; gap: 16px; }
+    .category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .topic-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card {
+      min-width: 0;
+      padding: 21px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(23,27,37,.94), rgba(16,19,27,.96));
+      transition: transform var(--transition), border-color var(--transition), background var(--transition);
+    }
+
+    .card:hover { border-color: rgba(182,160,255,.4); }
+    .clickable-card { cursor: pointer; }
+    .clickable-card:hover { transform: translateY(-4px); background: var(--surface-2); }
+    .card:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 3px; }
+
+    .category-icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 20px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255,255,255,.035);
+      font-size: 23px;
+    }
+
+    .card p { margin-bottom: 0; font-size: 13px; line-height: 1.75; }
+    .card-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 20px; color: var(--muted); font-size: 11px; }
+    .card-arrow { color: var(--accent-2); font-size: 18px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 9px;
+      border: 1px solid var(--line);
+      border-radius: 100px;
+      color: #c5ccdc;
+      font-size: 10px;
+      letter-spacing: .2px;
+    }
+
+    .panel {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(250px, .8fr); gap: 18px; }
+    .stack { display: grid; align-content: start; gap: 16px; }
+    .muted-small { color: var(--muted); font-size: 12px; }
+    .divider { height: 1px; margin: 20px 0; background: var(--line); }
+    .list-clean { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .list-clean li { position: relative; padding-left: 20px; color: var(--muted); font-size: 14px; }
+    .list-clean li::before { position: absolute; left: 0; color: var(--accent-2); content: "↗"; }
+
+    .article-content { max-width: 850px; }
+    .article-content h2 { margin-top: 28px; }
+    .article-content p, .article-content li { font-size: 14px; line-height: 1.9; }
+    .article-content ul { padding-left: 22px; color: var(--muted); }
+
+    .code-sample {
+      overflow-x: auto;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #090b10;
+      color: #d8d5ff;
+      font: 13px/1.8 ui-monospace, SFMono-Regular, Consolas, monospace;
+      white-space: pre;
+    }
+
+    .callout {
+      margin: 20px 0;
+      padding: 16px 18px;
+      border-left: 3px solid var(--accent-2);
+      border-radius: 0 12px 12px 0;
+      background: rgba(120,228,197,.06);
+      color: #cbd6d7;
+      font-size: 13px;
+    }
+
+    .field { display: grid; gap: 7px; margin: 15px 0; }
+    .field label { color: #c6ccda; font-size: 12px; font-weight: 700; }
+    .field input, .field textarea, .field select,
+    .control-input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+      background: #0d1017;
+      color: var(--text);
+    }
+
+    .field textarea { min-height: 110px; resize: vertical; }
+    .field input:focus, .field textarea:focus, .field select:focus,
+    .control-input:focus { border-color: var(--accent); }
+
+    .quiz-options { display: grid; gap: 9px; margin: 18px 0; }
+    .quiz-option {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--surface-2);
+      color: var(--text);
+      text-align: left;
+    }
+    .quiz-option:hover { border-color: var(--accent); }
+    .quiz-option.correct { border-color: var(--accent-2); background: rgba(120,228,197,.09); }
+    .quiz-option.incorrect { border-color: var(--danger); background: rgba(255,130,145,.08); }
+    .feedback { min-height: 24px; margin: 12px 0; color: var(--accent-2); font-size: 13px; }
+
+    .flashcard {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      padding: 25px;
+      border: 1px solid rgba(182,160,255,.24);
+      border-radius: 20px;
+      background: radial-gradient(circle at 50% 0, rgba(182,160,255,.12), transparent 65%), var(--surface-2);
+      text-align: center;
+    }
+    .flashcard-main { margin-bottom: 8px; font-size: clamp(30px, 5vw, 48px); font-weight: 800; }
+    .flashcard-sub { color: var(--muted); font-size: 14px; }
+
+    .progress-track { height: 7px; overflow: hidden; border-radius: 99px; background: var(--surface-3); }
+    .progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 240ms ease; }
+
+    .check-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); color: #d9deea; font-size: 13px; }
+    .check-row input { accent-color: var(--accent-2); width: 16px; height: 16px; }
+
+    .log-table { width: 100%; border-collapse: collapse; font: 12px/1.7 ui-monospace, monospace; }
+    .log-table th, .log-table td { padding: 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .log-table th { color: var(--muted); font-weight: 700; }
+    .log-table td { color: #d1d7e5; }
+    .log-table-wrap { overflow-x: auto; }
+
+    .empty-state { padding: 35px 15px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); text-align: center; }
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 100;
+      max-width: min(360px, calc(100vw - 32px));
+      padding: 13px 17px;
+      border: 1px solid rgba(120,228,197,.3);
+      border-radius: 12px;
+      background: #151d22;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: 180ms ease;
+    }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+
+    .footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 60px; padding-top: 22px; border-top: 1px solid var(--line); color: #737d91; font-size: 11px; }
+
+    .hidden { display: none !important; }
+
+    /* =========================================================
+       04. RESPONSIVE DESIGN
+    ========================================================= */
+    @media (max-width: 1100px) {
+      .category-grid, .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .sidebar { transform: translateX(-100%); transition: transform 220ms ease; box-shadow: var(--shadow); }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-topbar { display: flex; }
+      .main { margin-left: 0; padding: 22px 16px 40px; }
+      .topbar { align-items: flex-start; flex-direction: column; margin-bottom: 25px; }
+      .topbar-right { width: 100%; }
+      .search-wrap { width: 100%; }
+      .hero { padding: 28px 22px; border-radius: 22px; }
+      .category-grid, .topic-grid, .stats-grid { grid-template-columns: 1fr; }
+      .section-heading { align-items: flex-start; flex-direction: column; margin-top: 30px; }
+      .panel { padding: 18px; }
+      .footer { margin-top: 40px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="mobile-topbar">
+    <button class="icon-button" data-action="toggle-menu" aria-label="Toggle navigation">☰</button>
+    <a class="brand" href="#home" style="padding:0">
+      <span class="brand-mark">花</span>
+      <span class="brand-name">KUROHANA</span>
+    </a>
+    <button class="icon-button" data-action="go-home" aria-label="Go home">⌂</button>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#home" aria-label="Kurohana home">
+        <span class="brand-mark">花</span>
+        <span>
+          <span class="brand-name">KUROHANA</span>
+          <span class="brand-caption">PERSONAL KNOWLEDGE HUB</span>
+        </span>
+      </a>
+
+      <div class="nav-label">Workspace</div>
+      <nav class="nav-list">
+        <button class="nav-link active" data-action="go-home">
+          <span class="nav-icon">⌂</span> Overview
+        </button>
+        <button class="nav-link" data-action="go-category" data-id="programming">
+          <span class="nav-icon">⌘</span> Programming
+        </button>
+        <button class="nav-link" data-action="go-category" data-id="cybersecurity">
+          <span class="nav-icon">⬡</span> Cybersecurity
+        </button>
+        <button class="nav-link" data-action="go-category" data-id="japanese">
+          <span class="nav-icon">あ</span> Japanese
+        </button>
+        <button class="nav-link" data-action="go-category" data-id="writing">
+          <span class="nav-icon">✎</span> Creative Writing
+        </button>
+        <button class="nav-link" data-action="go-category" data-id="music">
+          <span class="nav-icon">♫</span> Music
+        </button>
+        <button class="nav-link" data-action="go-category" data-id="sports">
+          <span class="nav-icon">↗</span> Sports & Strategy
+        </button>
+      </nav>
+
+      <div class="nav-label">Personal</div>
+      <nav class="nav-list">
+        <button class="nav-link" data-action="go-page" data-id="practice">
+          <span class="nav-icon">✓</span> Practice Tracker
+        </button>
+        <button class="nav-link" data-action="go-page" data-id="about">
+          <span class="nav-icon">◉</span> About This Hub
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <span class="status-dot"></span> Your space to learn and create
+        <div style="margin-top:8px">© <span id="year"></span> Kurohana</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="main-inner">
+        <header class="topbar">
+          <div id="breadcrumbs" class="breadcrumbs" aria-label="Breadcrumb">
+            <span>Workspace</span><span class="crumb-separator">/</span><span>Overview</span>
+          </div>
+          <div class="topbar-right">
+            <div class="search-wrap">
+              <span class="search-symbol">⌕</span>
+              <input id="global-search" class="search-input" type="search"
+                placeholder="Search topics, skills, ideas..." aria-label="Search all topics" />
+            </div>
+          </div>
+        </header>
+
+        <section id="app-content" aria-live="polite"></section>
+
+        <footer class="footer">
+          <span>KUROHANA · A personal learning and creativity space</span>
+          <span>Built with HTML, CSS & JavaScript</span>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+
+    /* =========================================================
+       01. CONTENT MODEL
+       Add or edit categories and topics here.
+    ========================================================= */
+
+    const categories = [
+      {
+        id: "programming",
+        title: "Programming",
+        icon: "⌘",
+        description: "Build practical software skills, understand core concepts, and turn ideas into working projects.",
+        tags: ["Python", "Java", "SQL", "Web"],
+        topics: [
+          { id: "python", title: "Python Fundamentals", icon: "🐍", description: "Variables, conditions, loops, functions and readable code.", level: "Beginner", tags: ["Python", "Logic"], type: "article" },
+          { id: "java", title: "Java & OOP", icon: "☕", description: "Classes, objects, encapsulation, inheritance and polymorphism.", level: "Beginner–Intermediate", tags: ["Java", "OOP"], type: "article" },
+          { id: "database", title: "Database Design & SQL", icon: "▤", description: "Relational modelling, keys, joins, transactions and security.", level: "Intermediate", tags: ["SQL", "PostgreSQL"], type: "article" },
+          { id: "webdev", title: "Modern Web Development", icon: "🌐", description: "Structure, style, behaviour, accessibility and responsive layouts.", level: "Beginner–Intermediate", tags: ["HTML", "CSS", "JS"], type: "article" },
+          { id: "projects", title: "Project Laboratory", icon: "⚙", description: "Project blueprints, feature planning and practical milestones.", level: "All levels", tags: ["Projects", "Design"], type: "projects" },
+          { id: "codequiz", title: "Programming Quiz", icon: "⌨", description: "Test your understanding of programming fundamentals.", level: "Practice", tags: ["Quiz", "Logic"], type: "quiz", quiz: "programming" }
+        ]
+      },
+      {
+        id: "cybersecurity",
+        title: "Cybersecurity",
+        icon: "⬡",
+        description: "Learn defensive security, digital evidence handling, and how to investigate suspicious activity responsibly.",
+        tags: ["Defence", "Forensics", "Logs"],
+        topics: [
+          { id: "security-basics", title: "Security Fundamentals", icon: "🛡", description: "CIA triad, authentication, access control and threat modelling.", level: "Beginner", tags: ["Security", "Defence"], type: "article" },
+          { id: "forensics", title: "Digital Forensics", icon: "🔎", description: "Evidence preservation, hashing, documentation and analysis workflow.", level: "Intermediate", tags: ["Forensics", "Evidence"], type: "article" },
+          { id: "case-file", title: "Sample Investigation", icon: "📁", description: "Explore a fictional incident and assess the evidence carefully.", level: "Practice", tags: ["Investigation", "Case"], type: "case" },
+          { id: "log-lab", title: "Log Analysis Lab", icon: "⌁", description: "Filter sample authentication logs to identify suspicious patterns.", level: "Practice", tags: ["Logs", "Analysis"], type: "logs" },
+          { id: "passwords", title: "Passwords & MFA", icon: "🔐", description: "Understand passphrases, password managers and multi-factor authentication.", level: "Beginner", tags: ["Accounts", "MFA"], type: "article" },
+          { id: "cyberquiz", title: "Security Knowledge Check", icon: "✓", description: "Check your knowledge of safe, defensive security practices.", level: "Practice", tags: ["Quiz", "Defence"], type: "quiz", quiz: "cybersecurity" }
+        ]
+      },
+      {
+        id: "japanese",
+        title: "Japanese Language & Culture",
+        icon: "あ",
+        description: "Study vocabulary, grammar, kanji, JLPT-style questions, and cultural context step by step.",
+        tags: ["日本語", "JLPT", "Culture"],
+        topics: [
+          { id: "vocabulary", title: "Vocabulary Flashcards", icon: "🗂", description: "Review everyday Japanese words with meanings and readings.", level: "N5–N4", tags: ["Words", "Flashcards"], type: "flashcards" },
+          { id: "grammar", title: "Grammar Notes", icon: "文", description: "Learn useful sentence patterns and particles with examples.", level: "N5–N4", tags: ["Grammar", "Particles"], type: "article" },
+          { id: "kanji", title: "Kanji Practice", icon: "字", description: "Review common kanji, readings and example vocabulary.", level: "N5–N4", tags: ["Kanji", "Reading"], type: "kanji" },
+          { id: "jlptquiz", title: "JLPT Practice", icon: "✎", description: "Answer short Japanese language questions and check explanations.", level: "N5–N4", tags: ["JLPT", "Quiz"], type: "quiz", quiz: "japanese" },
+          { id: "culture", title: "Japanese Culture", icon: "⛩", description: "Explore etiquette, communication, punctuality and everyday customs.", level: "Culture", tags: ["Culture", "Etiquette"], type: "article" },
+          { id: "study-plan", title: "Language Study Planner", icon: "📅", description: "Create a small, repeatable daily Japanese study routine.", level: "Planner", tags: ["Study", "Routine"], type: "planner" }
+        ]
+      },
+      {
+        id: "writing",
+        title: "Creative Writing",
+        icon: "✎",
+        description: "Develop characters, design mysteries, build emotional scenes, and shape stories into complete narratives.",
+        tags: ["Crime", "Romance", "Ideas"],
+        topics: [
+          { id: "crime-writing", title: "Crime & Mystery", icon: "🕵", description: "Build clues, suspects, timelines and believable investigations.", level: "Writing craft", tags: ["Crime", "Mystery"], type: "article" },
+          { id: "romance-writing", title: "Romance Scenes", icon: "✦", description: "Use tension, subtext, character choices and emotional turning points.", level: "Writing craft", tags: ["Romance", "Dialogue"], type: "article" },
+          { id: "character-maker", title: "Character Creator", icon: "♙", description: "Create a character with a goal, flaw, secret and personal stakes.", level: "Interactive", tags: ["Characters", "Builder"], type: "character" },
+          { id: "plot-builder", title: "Plot Idea Generator", icon: "🎲", description: "Combine settings, conflicts and complications into fresh story seeds.", level: "Interactive", tags: ["Plot", "Prompts"], type: "generator" },
+          { id: "scene-prompts", title: "Scene Prompt Deck", icon: "✧", description: "Get short prompts for suspense, action, relationships and discovery.", level: "Interactive", tags: ["Prompts", "Scenes"], type: "prompts" },
+          { id: "writing-notes", title: "Story Notes", icon: "▤", description: "Save a working title, character ideas and story notes in this browser.", level: "Workspace", tags: ["Notes", "Planning"], type: "notes" }
+        ]
+      },
+      {
+        id: "music",
+        title: "Music & Drumming",
+        icon: "♫",
+        description: "Practise rhythm, improve timing, learn basic theory and track consistent music sessions.",
+        tags: ["Drums", "Rhythm", "Practice"],
+        topics: [
+          { id: "drum-practice", title: "Drum Practice Pad", icon: "🥁", description: "Count hits, work on even strokes and record a simple practice round.", level: "Practice", tags: ["Drums", "Timing"], type: "drums" },
+          { id: "music-theory", title: "Music Theory Basics", icon: "🎼", description: "Understand beats, bars, tempo, time signatures and dynamics.", level: "Beginner", tags: ["Theory", "Rhythm"], type: "article" },
+          { id: "tempo-lab", title: "Tempo Lab", icon: "⏱", description: "Tap along to estimate a tempo and practise steady timing.", level: "Interactive", tags: ["BPM", "Tempo"], type: "tempo" },
+          { id: "practice-music", title: "Music Practice Plan", icon: "✓", description: "Build a balanced warm-up, technique and song-practice routine.", level: "Planner", tags: ["Routine", "Progress"], type: "planner" },
+          { id: "listening", title: "Active Listening", icon: "🎧", description: "Listen for rhythm, arrangement, dynamics and repeated motifs.", level: "Skill building", tags: ["Listening", "Analysis"], type: "article" },
+          { id: "music-notes", title: "Practice Journal", icon: "▤", description: "Save what you practised, what felt difficult and your next goal.", level: "Workspace", tags: ["Journal", "Goals"], type: "notes" }
+        ]
+      },
+      {
+        id: "sports",
+        title: "Sports & Strategy",
+        icon: "↗",
+        description: "Plan badminton and basketball practice, record scores, and learn to make better tactical decisions.",
+        tags: ["Badminton", "Basketball", "Fitness"],
+        topics: [
+          { id: "badminton", title: "Badminton Training", icon: "🏸", description: "Footwork, serve consistency, recovery and shot placement.", level: "Training", tags: ["Badminton", "Skills"], type: "article" },
+          { id: "basketball", title: "Basketball Training", icon: "🏀", description: "Ball handling, shooting form, defensive stance and movement.", level: "Training", tags: ["Basketball", "Skills"], type: "article" },
+          { id: "scoreboard", title: "Match Scoreboard", icon: "▦", description: "Track a casual badminton or basketball score right in the browser.", level: "Interactive", tags: ["Score", "Match"], type: "scoreboard" },
+          { id: "strategy", title: "Strategy Challenges", icon: "♟", description: "Think through game situations and choose a sensible next move.", level: "Practice", tags: ["Tactics", "Quiz"], type: "quiz", quiz: "sports" },
+          { id: "training-plan", title: "Training Planner", icon: "📅", description: "Make a balanced session with warm-up, skill work and recovery.", level: "Planner", tags: ["Plan", "Fitness"], type: "planner" },
+          { id: "recovery", title: "Recovery & Consistency", icon: "◌", description: "Use rest, hydration, warm-ups and gradual progression responsibly.", level: "Wellbeing", tags: ["Recovery", "Routine"], type: "article" }
+        ]
+      }
+    ];
+
+    const articles = {
+      python: {
+        eyebrow: "PROGRAMMING / PYTHON",
+        intro: "Python is a general-purpose language known for readable syntax. Start with small programs, then build confidence by combining concepts.",
+        sections: [
+          ["01 · Variables and data types", "Variables give names to values. Common types include integers, floating-point numbers, strings and booleans."],
+          ["02 · Conditions", "Use if, elif and else to choose which block of code should run. Keep conditions clear and avoid unnecessary nesting."],
+          ["03 · Loops", "A for loop is useful when iterating over a sequence. A while loop repeats while its condition remains true."],
+          ["04 · Functions", "Functions package reusable behaviour. Give them clear names, pass inputs as parameters and return a result when appropriate."]
+        ],
+        code: "name = \"Aki\"\nscores = [78, 84, 91]\n\naverage = sum(scores) / len(scores)\n\nif average >= 80:\n    print(f\"{name}: strong progress\")\nelse:\n    print(f\"{name}: keep practising\")",
+        note: "Practice idea: change the scores, add a validation check for an empty list, and turn the average calculation into a function."
+      },
+      java: {
+        eyebrow: "PROGRAMMING / JAVA",
+        intro: "Object-oriented programming models related data and behaviour together. Java is a useful way to learn these ideas explicitly.",
+        sections: [
+          ["Classes and objects", "A class defines a structure. An object is an instance of that class with its own state."],
+          ["Encapsulation", "Keep internal state private where appropriate, and expose controlled operations through methods."],
+          ["Inheritance", "Inheritance lets a subclass reuse or specialise behaviour from a parent class. Prefer composition when it makes the design simpler."],
+          ["Polymorphism", "Code can work with a shared interface while different implementations provide their own behaviour."]
+        ],
+        code: "public class Book {\n    private final String title;\n\n    public Book(String title) {\n        this.title = title;\n    }\n\n    public String getTitle() {\n        return title;\n    }\n}",
+        note: "Try extending the example with an author field, input validation, and a method that returns a short book description."
+      },
+      database: {
+        eyebrow: "PROGRAMMING / DATABASES",
+        intro: "A relational database stores data in related tables. Thoughtful design reduces duplication and helps keep records consistent.",
+        sections: [
+          ["Primary and foreign keys", "A primary key uniquely identifies a row. A foreign key references a key in another table and can enforce a relationship."],
+          ["Normalisation", "Normalisation helps reduce update anomalies. Keep facts in the appropriate table and avoid storing repeating groups in one column."],
+          ["Transactions", "Transactions group related changes. ACID describes atomicity, consistency, isolation and durability."],
+          ["Security", "Use parameterised queries, least-privilege database accounts and carefully managed credentials."]
+        ],
+        code: "SELECT b.title, a.name AS author\nFROM books AS b\nJOIN authors AS a\n  ON a.author_id = b.author_id\nORDER BY b.title;",
+        note: "This is a read-only example. Practise by designing authors, books and borrowing records, then explain each primary key and foreign key."
+      },
+      webdev: {
+        eyebrow: "PROGRAMMING / WEB DEVELOPMENT",
+        intro: "A strong website combines semantic HTML, maintainable CSS and JavaScript that responds to user actions without making the interface confusing.",
+        sections: [
+          ["HTML — structure", "Use meaningful elements such as header, nav, main, section, article and footer. Give inputs accessible labels."],
+          ["CSS — presentation", "Use reusable design tokens, responsive grid or flexbox layouts, and visible focus states."],
+          ["JavaScript — behaviour", "Separate data from rendering, validate user input and use event listeners instead of scattered inline handlers."],
+          ["Quality", "Test mobile layouts, keyboard navigation, empty states and error states. Measure performance before adding unnecessary effects."]
+        ],
+        code: "const button = document.querySelector(\"#hello\");\nconst output = document.querySelector(\"#output\");\n\nbutton.addEventListener(\"click\", () => {\n  output.textContent = \"Welcome back!\";\n});",
+        note: "Try building a small form with validation, a search filter and persistent preferences. Do not place secrets in client-side JavaScript."
+      },
+      "security-basics": {
+        eyebrow: "CYBERSECURITY / FOUNDATIONS",
+        intro: "Cybersecurity is about reducing risk to systems and information. Start with defensive habits and understand what you are protecting.",
+        sections: [
+          ["Confidentiality", "Information should only be available to authorised people or systems."],
+          ["Integrity", "Information should remain accurate and protected against unauthorised modification."],
+          ["Availability", "Systems and data should be accessible when legitimate users need them."],
+          ["Threat modelling", "Identify assets, possible threats, weaknesses and likely impact. Prioritise mitigations by risk rather than by drama."]
+        ],
+        note: "Mini exercise: choose a university portal as an example. List one confidentiality risk, one integrity risk and one availability risk, then suggest a defensive control for each."
+      },
+      forensics: {
+        eyebrow: "CYBERSECURITY / DIGITAL FORENSICS",
+        intro: "Digital forensics uses a repeatable process to examine digital evidence while preserving its integrity and documenting decisions.",
+        sections: [
+          ["1. Authorisation and scope", "Confirm the legal authority, the system in scope, the permitted actions and the investigation objective."],
+          ["2. Preservation", "Avoid unnecessary changes to the original device or data. Follow approved acquisition procedures and document handling."],
+          ["3. Integrity checks", "Cryptographic hashes such as SHA-256 can help demonstrate whether a captured file or image changed between checks."],
+          ["4. Analysis and reporting", "Record timestamps, tools, assumptions and limitations. Distinguish observed facts from interpretations."]
+        ],
+        note: "Training reminder: use a lab image or synthetic dataset, not someone else's device or account. Real investigations require proper authorisation and evidence-handling procedures."
+      },
+      passwords: {
+        eyebrow: "CYBERSECURITY / ACCOUNT SECURITY",
+        intro: "Good account security combines strong unique credentials, secure recovery options and additional authentication factors.",
+        sections: [
+          ["Use unique passwords", "A password manager can generate and store long, unique passwords so one compromised service does not expose every account."],
+          ["Prefer long passphrases", "Length matters. Avoid predictable substitutions and information that can be guessed from public profiles."],
+          ["Enable MFA", "Multi-factor authentication adds another barrier. Passkeys or authenticator-based methods are generally preferable to SMS where supported."],
+          ["Protect recovery", "Keep recovery codes in a secure place and review active sessions and recovery email settings."]
+        ],
+        note: "Quick audit: list your important accounts privately, check whether each has a unique password, and enable MFA where possible. Never enter a real password into this demo site."
+      },
+      vocabulary: {
+        eyebrow: "JAPANESE / VOCABULARY",
+        intro: "Use the flashcards to practise common Japanese vocabulary. Try to recall the meaning before revealing the answer.",
+        sections: [
+          ["Study method", "Look at the Japanese word, say the reading aloud, recall the meaning, then use it in a short sentence."],
+          ["Active recall", "Trying to remember before checking the answer is more useful than repeatedly rereading the same list."],
+          ["Spaced review", "Revisit difficult words more often and easy words after longer intervals."]
+        ],
+        note: "The starter deck below is intentionally small. Expand it with vocabulary from your current textbook and JLPT level."
+      },
+      grammar: {
+        eyebrow: "JAPANESE / GRAMMAR",
+        intro: "Japanese grammar becomes easier when you study a pattern, notice its particles, and then make your own examples.",
+        sections: [
+          ["です — polite sentence ending", "わたしは学生です。 — I am a student. The particle は marks the topic; it is pronounced wa in this use."],
+          ["は — topic marker", "わたしは日本語を勉強します。 — I study Japanese. は introduces the topic being discussed."],
+          ["を — object marker", "本を読みます。 — I read a book. を marks the direct object in this sentence."],
+          ["に and で", "に can mark a destination or time, among other uses. で often marks the place where an action occurs. Learn each particle through examples."]
+        ],
+        note: "Do not translate particles mechanically into one English word. Their function depends on the sentence and the verb."
+      },
+      culture: {
+        eyebrow: "JAPANESE / CULTURE",
+        intro: "Culture is varied and changes across generations, workplaces and individuals. Treat customs as useful context, not rules that every person follows.",
+        sections: [
+          ["Punctuality", "Arriving on time is valued in many formal and professional settings. Check the specific expectations for each situation."],
+          ["Consideration", "Being mindful of shared spaces, noise and other people's time is a common theme in etiquette guidance."],
+          ["Polite language", "Japanese has different levels of politeness. The appropriate choice depends on the relationship, setting and purpose."],
+          ["Observe and ask", "When unsure, observe the context and ask respectfully rather than assuming everyone follows the same practice."]
+        ],
+        note: "Culture learning works best when you combine language study with real sources, first-hand accounts and curiosity."
+      },
+      "crime-writing": {
+        eyebrow: "CREATIVE WRITING / MYSTERY",
+        intro: "A satisfying mystery gives the reader enough fair clues to reason alongside the investigator, while controlling when those clues become meaningful.",
+        sections: [
+          ["The central question", "Decide what happened, who needs to know the truth, and why solving the case matters emotionally."],
+          ["Suspects and motives", "Give each major suspect a plausible motive, opportunity and a reason investigators might initially focus on them."],
+          ["Clue logic", "A clue should be observable and interpretable. A red herring misdirects without making the final explanation unfair."],
+          ["Evidence and timeline", "Build a private timeline before writing the reveal. Check whether travel times, access and character knowledge make sense."]
+        ],
+        note: "Exercise: write three facts the detective knows, two assumptions they make, and one piece of evidence that could prove an assumption wrong."
+      },
+      "romance-writing": {
+        eyebrow: "CREATIVE WRITING / ROMANCE",
+        intro: "Romance becomes compelling when attraction interacts with character goals, boundaries, fear and meaningful choices.",
+        sections: [
+          ["Subtext", "Characters do not always say exactly what they feel. Their choices, pauses and contradictions can reveal the emotion underneath."],
+          ["Specific chemistry", "Build attraction from details unique to these characters rather than relying only on generic descriptions."],
+          ["Conflict with purpose", "A disagreement should reveal values or change the relationship, not merely delay the next scene."],
+          ["Emotional turning points", "Let important moments affect what a character chooses afterwards. A confession matters because something changes."]
+        ],
+        note: "Try writing the same conversation twice: once where both characters are honest, and once where each hides one important feeling."
+      },
+      "music-theory": {
+        eyebrow: "MUSIC / THEORY",
+        intro: "Rhythm is organised sound over time. Counting steadily helps you understand how beats group into bars.",
+        sections: [
+          ["Beat and tempo", "The beat is a regular pulse. Tempo describes how quickly that pulse moves and is often measured in beats per minute (BPM)."],
+          ["Bars and time signatures", "A time signature indicates how beats are grouped. In 4/4, four quarter-note beats commonly form one bar."],
+          ["Dynamics", "Dynamics describe relative loudness. Controlled soft playing is just as important as playing loudly."],
+          ["Practice with a pulse", "Start slowly enough to play evenly. Increase tempo only when you can maintain accuracy and relaxed technique."]
+        ],
+        note: "For drumming, focus on consistency and relaxed movement. Stop if you experience pain, and use suitable hearing protection around loud instruments."
+      },
+      listening: {
+        eyebrow: "MUSIC / ACTIVE LISTENING",
+        intro: "Active listening means paying attention to how a piece is constructed, rather than hearing it only as background sound.",
+        sections: [
+          ["Layering", "Notice which instruments carry the melody, harmony, rhythm and supporting texture."],
+          ["Structure", "Listen for repeated sections, transitions, builds, breaks and changes in energy."],
+          ["Rhythm", "Follow the pulse, identify accents, and notice whether the groove feels straight, swung or syncopated."],
+          ["Write observations", "After listening, record two details you noticed and one question you want to explore."]
+        ],
+        note: "Pick a familiar track and listen three times: once for structure, once for rhythm, and once for the smallest musical details."
+      },
+      badminton: {
+        eyebrow: "SPORTS / BADMINTON",
+        intro: "Consistent movement, recovery and shot selection are foundations of badminton. Adjust drills to your current ability and available court space.",
+        sections: [
+          ["Warm-up", "Start with light movement and dynamic mobility before faster footwork or hitting drills."],
+          ["Footwork and recovery", "Practise moving to a corner, returning to a balanced base position, and changing direction under control."],
+          ["Serve and placement", "Prioritise a reliable serve and deliberate placement before chasing power."],
+          ["Tactical awareness", "Notice your opponent's position. A shot can be valuable because of where it sends the opponent, not just how hard it travels."]
+        ],
+        note: "Sample 30-minute session: 5 minutes warm-up, 8 minutes footwork, 10 minutes controlled placement, 5 minutes rally practice and 2 minutes cool-down."
+      },
+      basketball: {
+        eyebrow: "SPORTS / BASKETBALL",
+        intro: "Good fundamentals make more advanced tactics easier. Prioritise control, balanced movement and decision-making before speed.",
+        sections: [
+          ["Ball handling", "Practise both hands, keeping your head up and controlling the ball without unnecessary tension."],
+          ["Shooting form", "Use a balanced stance, a repeatable release and a comfortable follow-through. Track consistency from a fixed spot."],
+          ["Defensive stance", "Stay balanced, move laterally under control and keep awareness of both the ball and your assignment."],
+          ["Decision-making", "Before passing, driving or shooting, consider space, teammates, defenders and the time available."]
+        ],
+        note: "Sample session: warm-up, stationary ball handling, controlled layups, close-range shooting, defensive slides and cool-down."
+      },
+      recovery: {
+        eyebrow: "SPORTS / RECOVERY",
+        intro: "Progress comes from training plus recovery. A sustainable plan should fit your current fitness, schedule and physical needs.",
+        sections: [
+          ["Warm up and cool down", "Use a gradual warm-up before intense work and a comfortable cool-down afterwards."],
+          ["Rest matters", "Alternate demanding sessions with lighter work or rest. More training is not automatically better."],
+          ["Hydration and sleep", "Regular hydration and sufficient sleep support recovery and concentration."],
+          ["Progress gradually", "Increase workload in manageable steps. Stop and seek appropriate professional advice if pain or concerning symptoms develop."]
+        ],
+        note: "This is general training information, not an individual medical or coaching assessment."
+      }
+    };
+
+    const quizBank = {
+      programming: [
+        { q: "Which Python structure is used to define a reusable function?", options: ["class", "def", "return", "import"], answer: 1, explain: "The def keyword defines a function." },
+        { q: "What does a primary key do in a relational table?", options: ["Styles the table", "Uniquely identifies each row", "Encrypts every field", "Sorts all rows automatically"], answer: 1, explain: "A primary key uniquely identifies a row." },
+        { q: "Which technology primarily controls the visual presentation of a webpage?", options: ["CSS", "SQL", "DNS", "Git"], answer: 0, explain: "CSS controls layout, colours, typography and other presentation." },
+        { q: "What is encapsulation in OOP?", options: ["Deleting objects", "Combining data and behaviour with controlled access", "Running a database backup", "A CSS layout method"], answer: 1, explain: "Encapsulation organises state and behaviour and controls how internals are accessed." }
+      ],
+      cybersecurity: [
+        { q: "What does the 'I' in the CIA triad stand for?", options: ["Internet", "Identity", "Integrity", "Installation"], answer: 2, explain: "Integrity concerns accuracy and protection against unauthorised changes." },
+        { q: "Why can a cryptographic hash be useful in forensics?", options: ["It proves who committed a crime", "It helps compare data integrity", "It unlocks any encrypted file", "It replaces documentation"], answer: 1, explain: "Matching hashes can support an integrity check, but do not prove who performed an action." },
+        { q: "Which is a good defensive practice?", options: ["Reuse one password everywhere", "Share recovery codes", "Use unique passwords and MFA", "Disable all updates"], answer: 2, explain: "Unique passwords and multi-factor authentication reduce account risk." },
+        { q: "What should happen before examining a real device in an investigation?", options: ["Get appropriate authorisation and define scope", "Immediately delete suspicious files", "Post the contents online", "Install random tools"], answer: 0, explain: "Authorisation, scope and preservation are foundational to a responsible investigation." }
+      ],
+      japanese: [
+        { q: "What does ありがとう mean?", options: ["Good morning", "Thank you", "Excuse me", "Good night"], answer: 1, explain: "ありがとう means 'thank you' in a casual form." },
+        { q: "In わたしは学生です, how is は pronounced as a particle?", options: ["ha", "wa", "ga", "no"], answer: 1, explain: "The topic particle は is pronounced wa." },
+        { q: "What is the usual meaning of 水 (みず)?", options: ["Fire", "Tree", "Water", "Mountain"], answer: 2, explain: "水 is read みず (mizu) and means water." },
+        { q: "Which phrase is a polite way to say 'Good morning'?", options: ["おはようございます", "さようなら", "いただきます", "おやすみ"], answer: 0, explain: "おはようございます is the polite morning greeting." }
+      ],
+      sports: [
+        { q: "In badminton, what is a useful habit after playing a shot?", options: ["Stay where you hit it", "Recover towards a balanced base position", "Turn your back to the net", "Always hit as hard as possible"], answer: 1, explain: "Recovering to a balanced position helps prepare for the next shot." },
+        { q: "What is a sensible first step before intense training?", options: ["Skip preparation", "Warm up gradually", "Start with maximum effort", "Avoid drinking water all day"], answer: 1, explain: "A gradual warm-up prepares you for more demanding movement." },
+        { q: "In basketball, what can help a player make a better pass decision?", options: ["Ignore defenders", "Look at available space and teammates", "Always shoot immediately", "Keep the ball regardless of pressure"], answer: 1, explain: "Awareness of teammates, defenders and space improves decisions." }
+      ]
+    };
+
+    const flashcards = [
+      { front: "水", reading: "みず · mizu", back: "Water" },
+      { front: "本", reading: "ほん · hon", back: "Book" },
+      { front: "学校", reading: "がっこう · gakkou", back: "School" },
+      { front: "友達", reading: "ともだち · tomodachi", back: "Friend" },
+      { front: "時間", reading: "じかん · jikan", back: "Time" },
+      { front: "食べる", reading: "たべる · taberu", back: "To eat" },
+      { front: "見る", reading: "みる · miru", back: "To see / watch" },
+      { front: "今日", reading: "きょう · kyou", back: "Today" }
+    ];
+
+    const kanjiCards = [
+      { kanji: "日", on: "ニチ・ジツ", kun: "ひ・か", meaning: "day / sun", example: "日本（にほん）— Japan" },
+      { kanji: "月", on: "ゲツ・ガツ", kun: "つき", meaning: "moon / month", example: "月曜日（げつようび）— Monday" },
+      { kanji: "人", on: "ジン・ニン", kun: "ひと", meaning: "person", example: "日本人（にほんじん）— Japanese person" },
+      { kanji: "山", on: "サン", kun: "やま", meaning: "mountain", example: "富士山（ふじさん）— Mount Fuji" },
+      { kanji: "水", on: "スイ", kun: "みず", meaning: "water", example: "水曜日（すいようび）— Wednesday" }
+    ];
+
+    const projectIdeas = [
+      { title: "Smart Book Management System", difficulty: "Intermediate", description: "Model authors, books, borrowers and borrowing transactions. Add search, overdue status and role-based permissions.", stack: "PostgreSQL · Java or Python" },
+      { title: "Japanese Vocabulary Trainer", difficulty: "Beginner", description: "Create flashcards, topic filters, quiz rounds and a local progress tracker.", stack: "HTML · CSS · JavaScript" },
+      { title: "Log Review Dashboard", difficulty: "Intermediate", description: "Parse synthetic login logs, filter events and display counts by severity or status.", stack: "Python · CSV · Data visualisation" },
+      { title: "Personal Practice Planner", difficulty: "Beginner", description: "Plan study blocks, mark sessions complete and review weekly progress.", stack: "JavaScript · localStorage" },
+      { title: "Story Case Notebook", difficulty: "Beginner", description: "Organise fictional suspects, clues, scene notes and a case timeline.", stack: "HTML · CSS · JavaScript" },
+      { title: "Sports Score Tracker", difficulty: "Beginner", description: "Record a match score, switch the serving side and reset each game.", stack: "JavaScript · DOM" }
+    ];
+
+    const promptDeck = [
+      "A detective finds a photograph that should not exist in the official case file.",
+      "Two rivals must cooperate during a power outage, but each knows a different part of the truth.",
+      "A witness remembers the sound of an event clearly but is uncertain about the time.",
+      "A quiet character receives a message written in a language they have not studied for years.",
+      "A missing object is found in a place that was searched twice.",
+      "Two people meet again after years apart, each believing the other chose to leave.",
+      "A seemingly ordinary delivery connects three people who have never met.",
+      "The investigator's strongest clue turns out to be accurate but misunderstood."
+    ];
+
+    const plotSettings = ["a university research lab", "a rainy coastal town", "a crowded railway station", "a quiet apartment building", "a remote mountain hotel", "a forensic science department"];
+    const plotConflicts = ["a missing witness", "a stolen research notebook", "a disputed identity", "an unexplained break-in", "a secret kept by two siblings", "a suspicious sequence of messages"];
+    const plotComplications = ["the timeline contradicts the first report", "an ally refuses to explain their actions", "the key evidence has two plausible meanings", "the deadline arrives earlier than expected", "a minor detail changes the entire theory", "the main character must choose between trust and certainty"];
+
+    /* =========================================================
+       02. APP STATE AND UTILITIES
+    ========================================================= */
+    const appContent = document.getElementById("app-content");
+    const breadcrumbs = document.getElementById("breadcrumbs");
+    const searchInput = document.getElementById("global-search");
+    const sidebar = document.getElementById("sidebar");
+    const toastElement = document.getElementById("toast");
+
+    const state = {
+      route: { type: "home", id: "" },
+      search: "",
+      flashIndex: 0,
+      flashRevealed: false,
+      kanjiIndex: 0,
+      drumHits: 0,
+      tempoTaps: [],
+      scoreA: 0,
+      scoreB: 0,
+      quizIndex: 0,
+      quizScore: 0,
+      quizAnswered: false,
+      quizTopic: "",
+      logsFilter: "ALL",
+      logsSearch: ""
+    };
+
+    const storage = {
+      read(key, fallback) {
+        try {
+          const value = localStorage.getItem(key);
+          return value === null ? fallback : JSON.parse(value);
+        } catch {
+          return fallback;
+        }
+      },
+      write(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+          return true;
+        } catch {
+          showToast("Browser storage is unavailable in this session.");
+          return false;
+        }
+      }
+    };
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function findCategory(id) {
+      return categories.find(category => category.id === id);
+    }
+
+    function findTopic(id) {
+      for (const category of categories) {
+        const topic = category.topics.find(item => item.id === id);
+        if (topic) return { ...topic, categoryId: category.id, categoryTitle: category.title };
+      }
+      return null;
+    }
+
+    function showToast(message) {
+      toastElement.textContent = message;
+      toastElement.classList.add("visible");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toastElement.classList.remove("visible"), 2600);
+    }
+
+    function setRoute(type, id = "", options = {}) {
+      state.route = { type, id };
+      if (!options.keepSearch) searchInput.value = "";
+      state.search = "";
+      sidebar.classList.remove("open");
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      const hash = type === "home" ? "home" : `${type}/${id}`;
+      if (window.location.hash.slice(1) !== hash) {
+        history.pushState({ type, id }, "", `#${hash}`);
+      }
+    }
+
+    function routeFromHash() {
+      const value = decodeURIComponent(window.location.hash.slice(1) || "home");
+      if (value === "home") {
+        state.route = { type: "home", id: "" };
+      } else {
+        const [type, ...rest] = value.split("/");
+        const id = rest.join("/");
+        if (type === "category" && findCategory(id)) state.route = { type, id };
+        else if (type === "topic" && findTopic(id)) state.route = { type, id };
+        else if (type === "page" && ["practice", "about"].includes(id)) state.route = { type, id };
+        else state.route = { type: "home", id: "" };
+      }
+      render();
+    }
+
+    function setBreadcrumbs(items) {
+      breadcrumbs.innerHTML = items.map((item, index) => {
+        if (index === items.length - 1) {
+          return `<span aria-current="page">${escapeHTML(item.label)}</span>`;
+        }
+        return `<button data-action="${escapeHTML(item.action || "go-home")}" ${item.id ? `data-id="${escapeHTML(item.id)}"` : ""}>${escapeHTML(item.label)}</button><span class="crumb-separator">/</span>`;
+      }).join("");
+    }
+
+    function topicCard(topic, categoryId) {
+      return `
+        <article class="card clickable-card" tabindex="0" role="link"
+          data-action="go-topic" data-id="${escapeHTML(topic.id)}" aria-label="Open ${escapeHTML(topic.title)}">
+          <div class="category-icon">${topic.icon}</div>
+          <h3>${escapeHTML(topic.title)}</h3>
+          <p>${escapeHTML(topic.description)}</p>
+          <div class="tag-row">${topic.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
+          <div class="card-meta"><span>${escapeHTML(topic.level)}</span><span class="card-arrow">↗</span></div>
+        </article>`;
+    }
+
+    function categoryCard(category) {
+      return `
+        <article class="card clickable-card" tabindex="0" role="link"
+          data-action="go-category" data-id="${escapeHTML(category.id)}" aria-label="Open ${escapeHTML(category.title)}">
+          <div class="category-icon">${category.icon}</div>
+          <h3>${escapeHTML(category.title)}</h3>
+          <p>${escapeHTML(category.description)}</p>
+          <div class="tag-row">${category.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
+          <div class="card-meta"><span>${category.topics.length} learning modules</span><span class="card-arrow">↗</span></div>
+        </article>`;
+    }
+
+    function renderHome() {
+      setBreadcrumbs([{ label: "Workspace" }, { label: "Overview" }]);
+
+      const totalTopics = categories.reduce((total, category) => total + category.topics.length, 0);
+      const done = storage.read("kurohana.completed", []);
+      const progress = totalTopics ? Math.round(done.length / totalTopics * 100) : 0;
+
+      appContent.innerHTML = `
+        <section class="hero">
+          <p class="eyebrow">YOUR PERSONAL WORKSPACE</p>
+          <h1>Explore deeply.<br /><span>Create intentionally.</span></h1>
+          <p class="lead">A calm, organised space for technical learning, Japanese study, storytelling, music and sport. Follow your curiosity, one practical step at a time.</p>
+          <div class="hero-actions">
+            <button class="button primary" data-action="go-category" data-id="programming">Explore learning paths ↗</button>
+            <button class="button" data-action="go-page" data-id="practice">Open practice tracker ✓</button>
+          </div>
+        </section>
+
+        <div class="section-heading">
+          <div><p class="eyebrow">YOUR DASHBOARD</p><h2>A little progress, every day.</h2></div>
+          <p>${totalTopics} modules across ${categories.length} interests</p>
+        </div>
+
+        <div class="grid stats-grid">
+          <div class="card"><p class="eyebrow">INTEREST AREAS</p><h2>${categories.length}</h2><p>Different ways to learn and create.</p></div>
+          <div class="card"><p class="eyebrow">LEARNING MODULES</p><h2>${totalTopics}</h2><p>Notes, activities and practical exercises.</p></div>
+          <div class="card"><p class="eyebrow">TRACKED PROGRESS</p><h2>${progress}%</h2><div class="progress-track" style="margin-top:12px"><div class="progress-fill" style="width:${progress}%"></div></div><p style="margin-top:10px">${done.length} modules marked complete.</p></div>
+        </div>
+
+        <div class="section-heading">
+          <div><p class="eyebrow">EXPLORE</p><h2>Your interest library</h2></div>
+          <p>Choose a category to open its learning dashboard.</p>
+        </div>
+        <div class="grid category-grid">${categories.map(categoryCard).join("")}</div>
+
+        <div class="section-heading"><div><p class="eyebrow">START HERE</p><h2>Suggested next steps</h2></div></div>
+        <div class="grid topic-grid">
+          ${topicCard(findTopic("python"), "programming")}
+          ${topicCard(findTopic("vocabulary"), "japanese")}
+          ${topicCard(findTopic("case-file"), "cybersecurity")}
+        </div>`;
+    }
+
+    function renderCategory(id) {
+      const category = findCategory(id);
+      if (!category) return renderHome();
+
+      setBreadcrumbs([
+        { label: "Workspace", action: "go-home" },
+        { label: category.title }
+      ]);
+
+      appContent.innerHTML = `
+        <section class="hero">
+          <p class="eyebrow">${escapeHTML(category.title.toUpperCase())} · LEARNING PATH</p>
+          <h1>${category.icon} ${escapeHTML(category.title)}</h1>
+          <p class="lead">${escapeHTML(category.description)}</p>
+          <div class="tag-row">${category.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
+        </section>
+        <div class="section-heading">
+          <div><p class="eyebrow">MODULE LIBRARY</p><h2>Choose what to explore</h2></div>
+          <p>${category.topics.length} modules</p>
+        </div>
+        <div class="grid topic-grid">${category.topics.map(topic => topicCard(topic, category.id)).join("")}</div>`;
+    }
+
+    function renderArticle(topic, category) {
+      const article = articles[topic.id] || {
+        eyebrow: `${category.title.toUpperCase()} / NOTES`,
+        intro: topic.description,
+        sections: [
+          ["Understand the basics", "Start by identifying the core skills involved and what good performance looks like."],
+          ["Practise deliberately", "Choose one manageable skill, repeat it with attention, and note what changes."],
+          ["Review your progress", "Use specific observations to decide what to practise next."]
+        ],
+        note: "Treat this page as a starting point. Add your own notes and examples as you learn."
+      };
+
+      return `
+        <div class="content-grid">
+          <article class="panel article-content">
+            <p class="eyebrow">${escapeHTML(article.eyebrow)}</p>
+            <h1 style="font-size:clamp(28px,3vw,40px)">${escapeHTML(topic.title)}</h1>
+            <p class="lead">${escapeHTML(article.intro)}</p>
+            ${article.sections.map(([heading, text]) => `<h2>${escapeHTML(heading)}</h2><p>${escapeHTML(text)}</p>`).join("")}
+            ${article.code ? `<h2>Example</h2><pre class="code-sample"><code>${escapeHTML(article.code)}</code></pre>` : ""}
+            <div class="callout">${escapeHTML(article.note)}</div>
+          </article>
+          <aside class="stack">
+            <div class="panel">
+              <p class="eyebrow">MODULE DETAILS</p>
+              <h3>${escapeHTML(topic.level)}</h3>
+              <p class="muted-small">${escapeHTML(topic.description)}</p>
+              <div class="tag-row">${topic.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
+              <div class="divider"></div>
+              <button class="button primary" style="width:100%" data-action="toggle-complete" data-id="${escapeHTML(topic.id)}">✓ Mark as complete</button>
+              <p class="muted-small" style="margin:12px 0 0">Completion is saved in this browser.</p>
+            </div>
+            <div class="panel">
+              <p class="eyebrow">KEEP GOING</p>
+              <h3>Related modules</h3>
+              <ul class="list-clean">
+                ${category.topics.filter(item => item.id !== topic.id).slice(0, 4).map(item => `<li><button class="button small" data-action="go-topic" data-id="${escapeHTML(item.id)}">${escapeHTML(item.title)} ↗</button></li>`).join("")}
+              </ul>
+            </div>
+          </aside>
+        </div>`;
+    }
+
+    function renderQuiz(topic) {
+      const bank = quizBank[topic.quiz] || quizBank.programming;
+      if (state.quizTopic !== topic.id) {
+        state.quizTopic = topic.id;
+        state.quizIndex = 0;
+        state.quizScore = 0;
+        state.quizAnswered = false;
+      }
+
+      if (state.quizIndex >= bank.length) {
+        const score = state.quizScore;
+        return `
+          <div class="panel" style="max-width:760px">
+            <p class="eyebrow">QUIZ COMPLETE</p>
+            <h1 style="font-size:38px">Round finished.</h1>
+            <p class="lead">You scored <strong>${score} / ${bank.length}</strong>. Use the explanations to identify what to review next.</p>
+            <div class="progress-track"><div class="progress-fill" style="width:${Math.round(score / bank.length * 100)}%"></div></div>
+            <div class="hero-actions"><button class="button primary" data-action="restart-quiz" data-id="${escapeHTML(topic.id)}">Try again ↻</button><button class="button" data-action="go-category" data-id="${escapeHTML(topic.categoryId)}">Back to modules</button></div>
+          </div>`;
+      }
+
+      const question = bank[state.quizIndex];
+      return `
+        <div class="panel" style="max-width:760px">
+          <p class="eyebrow">KNOWLEDGE CHECK · ${escapeHTML(topic.title.toUpperCase())}</p>
+          <div class="section-heading" style="margin-top:10px">
+            <h2>Question ${state.quizIndex + 1} of ${bank.length}</h2>
+            <span class="tag">Score: ${state.quizScore}</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:${(state.quizIndex / bank.length) * 100}%"></div></div>
+          <h2 style="margin-top:25px">${escapeHTML(question.q)}</h2>
+          <div class="quiz-options">
+            ${question.options.map((option, index) => `<button class="quiz-option" data-action="answer-quiz" data-index="${index}" ${state.quizAnswered ? "disabled" : ""}>${String.fromCharCode(65 + index)}. ${escapeHTML(option)}</button>`).join("")}
+          </div>
+          <p id="quiz-feedback" class="feedback">${state.quizAnswered ? "Answer recorded. Continue when ready." : "Choose the best answer."}</p>
+          ${state.quizAnswered ? `<div class="callout">${escapeHTML(question.explain)}</div><button class="button primary" data-action="next-quiz">${state.quizIndex === bank.length - 1 ? "See results" : "Next question"} →</button>` : ""}
+        </div>`;
+    }
+
+    function renderFlashcards(topic) {
+      const card = flashcards[state.flashIndex % flashcards.length];
+      return `
+        <div class="content-grid">
+          <div class="stack">
+            <div class="flashcard">
+              <div>
+                <p class="eyebrow">JAPANESE VOCABULARY</p>
+                <div class="flashcard-main">${escapeHTML(card.front)}</div>
+                <div class="flashcard-sub">${escapeHTML(card.reading)}</div>
+                <div class="divider"></div>
+                <div class="flashcard-sub">${state.flashRevealed ? escapeHTML(card.back) : "Try to remember the meaning first."}</div>
+              </div>
+            </div>
+            <div class="hero-actions" style="margin-top:0">
+              <button class="button primary" data-action="reveal-flashcard">${state.flashRevealed ? "Hide meaning" : "Reveal meaning"}</button>
+              <button class="button" data-action="flashcard-prev">← Previous</button>
+              <button class="button" data-action="flashcard-next">Next →</button>
+            </div>
+            <p class="muted-small">Card ${state.flashIndex + 1} of ${flashcards.length}</p>
+          </div>
+          <aside class="panel">
+            <p class="eyebrow">HOW TO USE</p>
+            <h3>Active recall</h3>
+            <ul class="list-clean">
+              <li>Read the Japanese word.</li>
+              <li>Recall its meaning before revealing.</li>
+              <li>Say the reading out loud.</li>
+              <li>Make a short example sentence.</li>
+            </ul>
+            <div class="divider"></div>
+            <p class="muted-small">The deck is a small starter set. Add words from your own lessons as you progress.</p>
+          </aside>
+        </div>`;
+    }
+
+    function renderKanji() {
+      const item = kanjiCards[state.kanjiIndex % kanjiCards.length];
+      return `
+        <div class="content-grid">
+          <div class="flashcard">
+            <div>
+              <p class="eyebrow">KANJI STUDY</p>
+              <div class="flashcard-main">${item.kanji}</div>
+              <h3>${escapeHTML(item.meaning)}</h3>
+              <p>On: ${escapeHTML(item.on)}</p>
+              <p>Kun: ${escapeHTML(item.kun)}</p>
+              <div class="callout">${escapeHTML(item.example)}</div>
+              <p class="muted-small">Card ${state.kanjiIndex + 1} of ${kanjiCards.length}</p>
+              <button class="button" data-action="kanji-next">Next kanji →</button>
+            </div>
+          </div>
+          <div class="panel">
+            <p class="eyebrow">READING REMINDER</p>
+            <h3>Context matters</h3>
+            <p>Kanji can have several readings. Learn them through real vocabulary rather than memorising every possible reading at once.</p>
+            <div class="divider"></div>
+            <p class="muted-small">These are introductory examples, not a complete kanji reference.</p>
+          </div>
+        </div>`;
+    }
+
+    function renderProjects() {
+      return `<div class="grid topic-grid">${projectIdeas.map((project, index) => `
+        <article class="card">
+          <span class="tag">${escapeHTML(project.difficulty)}</span>
+          <h3 style="margin-top:15px">${escapeHTML(project.title)}</h3>
+          <p>${escapeHTML(project.description)}</p>
+          <div class="divider"></div>
+          <p class="muted-small">Suggested stack</p>
+          <p>${escapeHTML(project.stack)}</p>
+          <button class="button small" data-action="save-project" data-index="${index}">＋ Save idea</button>
+        </article>`).join("")}</div>`;
+    }
+
+    function renderCase() {
+      return `
+        <div class="content-grid">
+          <div class="panel article-content">
+            <p class="eyebrow">FICTIONAL TRAINING SCENARIO</p>
+            <h1 style="font-size:36px">Case 014: The Late Login</h1>
+            <p>A fictional university system records three unsuccessful sign-in attempts followed by a successful login. A staff member reports that they were away from their desk during the period.</p>
+            <h2>Initial observations</h2>
+            <ul>
+              <li>Three failed sign-ins appear within a short interval.</li>
+              <li>A successful sign-in follows.</li>
+              <li>The user reports being away, but the report has not yet been independently verified.</li>
+            </ul>
+            <div class="callout">These are synthetic training facts. Do not infer a person's guilt from a log entry alone.</div>
+            <button class="button primary" data-action="reveal-case">Review additional evidence</button>
+            <div id="case-evidence" class="hidden">
+              <h2>Additional evidence</h2>
+              <ul>
+                <li>The successful session used a familiar device identifier.</li>
+                <li>The system clock is confirmed to be synchronised.</li>
+                <li>The account owner says they sometimes use a mobile device away from the desk.</li>
+              </ul>
+              <h2>Analyst assessment</h2>
+              <p>The activity is worth investigating, but the available evidence does not establish who used the account. Preserve relevant records, confirm scope and authorised access, compare session details, and document uncertainty.</p>
+            </div>
+          </div>
+          <aside class="panel">
+            <p class="eyebrow">INVESTIGATION METHOD</p>
+            <h3>Separate facts from assumptions</h3>
+            <ul class="list-clean">
+              <li>Record the observed event.</li>
+              <li>Identify alternative explanations.</li>
+              <li>Check timestamp and data quality.</li>
+              <li>Document limitations.</li>
+            </ul>
+          </aside>
+        </div>`;
+    }
+
+    const sampleLogs = [
+      { time: "09:01:12", user: "student01", event: "LOGIN_SUCCESS", source: "192.0.2.14", severity: "INFO" },
+      { time: "09:02:08", user: "staff02", event: "LOGIN_FAILED", source: "198.51.100.7", severity: "WARN" },
+      { time: "09:02:14", user: "staff02", event: "LOGIN_FAILED", source: "198.51.100.7", severity: "WARN" },
+      { time: "09:02:20", user: "staff02", event: "LOGIN_FAILED", source: "198.51.100.7", severity: "WARN" },
+      { time: "09:03:01", user: "staff02", event: "LOGIN_SUCCESS", source: "198.51.100.7", severity: "INFO" },
+      { time: "09:06:42", user: "admin-demo", event: "PASSWORD_RESET", source: "192.0.2.33", severity: "INFO" },
+      { time: "09:08:10", user: "student03", event: "ACCESS_DENIED", source: "203.0.113.9", severity: "WARN" },
+      { time: "09:09:17", user: "student01", event: "LOGOUT", source: "192.0.2.14", severity: "INFO" }
+    ];
+
+    function renderLogs() {
+      const filtered = sampleLogs.filter(log => {
+        const severityMatch = state.logsFilter === "ALL" || log.severity === state.logsFilter;
+        const text = `${log.time} ${log.user} ${log.event} ${log.source} ${log.severity}`.toLowerCase();
+        return severityMatch && text.includes(state.logsSearch.toLowerCase());
+      });
+
+      return `
+        <div class="panel">
+          <p class="eyebrow">SYNTHETIC DATASET · DEFENSIVE ANALYSIS</p>
+          <h1 style="font-size:36px">Authentication log lab</h1>
+          <p>Filter sample events and look for patterns. The IP addresses are documentation ranges reserved for examples.</p>
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:20px 0">
+            <div class="field"><label for="log-search">Search log entries</label><input id="log-search" class="control-input" value="${escapeHTML(state.logsSearch)}" placeholder="User, event, address..." /></div>
+            <div class="field"><label for="log-filter">Severity</label><select id="log-filter" class="control-input"><option value="ALL" ${state.logsFilter === "ALL" ? "selected" : ""}>All events</option><option value="INFO" ${state.logsFilter === "INFO" ? "selected" : ""}>INFO</option><option value="WARN" ${state.logsFilter === "WARN" ? "selected" : ""}>WARN</option></select></div>
+          </div>
+          <p class="muted-small">Showing ${filtered.length} of ${sampleLogs.length} events.</p>
+          <div class="log-table-wrap"><table class="log-table"><thead><tr><th>Time</th><th>User</th><th>Event</th><th>Source</th><th>Severity</th></tr></thead><tbody>
+            ${filtered.map(log => `<tr><td>${log.time}</td><td>${escapeHTML(log.user)}</td><td>${escapeHTML(log.event)}</td><td>${escapeHTML(log.source)}</td><td>${log.severity === "WARN" ? `<span style="color:var(--warning)">WARN</span>` : `<span style="color:var(--accent-2)">INFO</span>`}</td></tr>`).join("") || `<tr><td colspan="5">No matching events.</td></tr>`}
+          </tbody></table></div>
+          <div class="callout">A burst of failed sign-ins may warrant review, but context matters. Correlate events with authorised records before drawing conclusions.</div>
+        </div>`;
+    }
+
+    function renderCharacterMaker() {
+      return `
+        <div class="content-grid">
+          <form class="panel" id="character-form">
+            <p class="eyebrow">CHARACTER WORKSHOP</p>
+            <h2>Build a character</h2>
+            <div class="field"><label for="char-name">Name</label><input id="char-name" name="name" maxlength="70" required placeholder="e.g. Mina Kwon" /></div>
+            <div class="field"><label for="char-role">Role in the story</label><select id="char-role" name="role"><option>Investigator</option><option>Forensic scientist</option><option>Witness</option><option>Rival</option><option>Love interest</option><option>Antagonist</option></select></div>
+            <div class="field"><label for="char-goal">Main goal</label><input id="char-goal" name="goal" maxlength="180" required placeholder="What are they trying to achieve?" /></div>
+            <div class="field"><label for="char-flaw">Personal flaw</label><input id="char-flaw" name="flaw" maxlength="180" placeholder="What makes things harder?" /></div>
+            <div class="field"><label for="char-secret">Secret or contradiction</label><textarea id="char-secret" name="secret" maxlength="500" placeholder="What do they hide, even from themselves?"></textarea></div>
+            <button class="button primary" type="submit">Generate character profile ↗</button>
+          </form>
+          <div class="panel">
+            <p class="eyebrow">CHARACTER PROFILE</p>
+            <div id="character-output"><h3>Your character will appear here.</h3><p>Give them a goal, a weakness and a choice that tests both.</p></div>
+          </div>
+        </div>`;
+    }
+
+    function renderGenerator() {
+      return `
+        <div class="panel" style="max-width:820px">
+          <p class="eyebrow">STORY DEVELOPMENT TOOL</p>
+          <h1 style="font-size:36px">Build a plot seed</h1>
+          <p>Combine a setting, a conflict and a complication. Use the result as a starting point, not a fixed plot.</p>
+          <div id="plot-output" class="callout">Your next story idea is waiting.</div>
+          <button class="button primary" data-action="generate-plot">Generate another idea ↻</button>
+          <button class="button" data-action="save-plot">Save this idea</button>
+          <div class="divider"></div>
+          <p class="eyebrow">QUICK PROMPT DECK</p>
+          <p>${escapeHTML(promptDeck[0])}</p>
+          <button class="button small" data-action="random-prompt">Draw a prompt ✧</button>
+          <p id="prompt-output" style="margin-top:12px"></p>
+        </div>`;
+    }
+
+    function renderPrompts() {
+      return `
+        <div class="panel" style="max-width:800px">
+          <p class="eyebrow">SCENE PROMPT DECK</p>
+          <h1 style="font-size:36px">Start with a moment.</h1>
+          <p>Pick a prompt, then write for five minutes without editing. Follow the most interesting character choice.</p>
+          <div class="flashcard"><div><div class="flashcard-main">✧</div><p id="prompt-output">${escapeHTML(promptDeck[Math.floor(Math.random() * promptDeck.length)])}</p></div></div>
+          <div class="hero-actions"><button class="button primary" data-action="random-prompt">Draw another prompt ↻</button><button class="button" data-action="save-prompt">Save prompt</button></div>
+        </div>`;
+    }
+
+    function renderNotes(topic) {
+      const key = `kurohana.notes.${topic.id}`;
+      const saved = storage.read(key, "");
+      return `
+        <div class="panel" style="max-width:850px">
+          <p class="eyebrow">PERSONAL WORKSPACE</p>
+          <h1 style="font-size:36px">${escapeHTML(topic.title)}</h1>
+          <p>Keep rough ideas here while you work. Notes are saved only in this browser on this device.</p>
+          <div class="field"><label for="notes-title">Session title</label><input id="notes-title" maxlength="100" value="${escapeHTML(storage.read(`${key}.title`, ""))}" placeholder="Today's focus..." /></div>
+          <div class="field"><label for="notes-body">Notes</label><textarea id="notes-body" maxlength="12000" style="min-height:250px" placeholder="Ideas, observations, questions, next steps...">${escapeHTML(saved)}</textarea></div>
+          <button class="button primary" data-action="save-notes" data-id="${escapeHTML(topic.id)}">Save notes</button>
+          <button class="button" data-action="clear-notes" data-id="${escapeHTML(topic.id)}">Clear notes</button>
+        </div>`;
+    }
+
+    function renderPlanner(topic) {
+      const options = topic.categoryId === "japanese"
+        ? ["Review 10 vocabulary cards", "Study one grammar pattern", "Write five example sentences", "Review difficult kanji", "Listen to Japanese for 10 minutes"]
+        : topic.categoryId === "music"
+        ? ["Warm up gently", "Practise timing slowly", "Work on one technique", "Play a familiar piece", "Write a short practice note"]
+        : topic.categoryId === "sports"
+        ? ["Warm up and move comfortably", "Practise one core skill", "Complete a controlled drill", "Review technique and decisions", "Cool down and reflect"]
+        : ["Choose one learning objective", "Review the core concept", "Complete a short exercise", "Test your understanding", "Write the next step"];
+
+      const key = `kurohana.planner.${topic.id}`;
+      const checked = storage.read(key, []);
+      return `
+        <div class="panel" style="max-width:800px">
+          <p class="eyebrow">PRACTICE PLANNER</p>
+          <h1 style="font-size:36px">${escapeHTML(topic.title)}</h1>
+          <p>Keep the session realistic. A focused 20 minutes can be more useful than an ambitious plan you cannot repeat.</p>
+          <div id="planner-list">
+            ${options.map((item, index) => `<label class="check-row"><input type="checkbox" data-planner-id="${index}" ${checked.includes(index) ? "checked" : ""} /><span>${escapeHTML(item)}</span></label>`).join("")}
+          </div>
+          <div class="divider"></div>
+          <p id="planner-progress">${checked.length} of ${options.length} tasks complete.</p>
+          <div class="progress-track"><div id="planner-bar" class="progress-fill" style="width:${checked.length / options.length * 100}%"></div></div>
+          <button class="button" style="margin-top:18px" data-action="reset-planner" data-id="${escapeHTML(topic.id)}">Reset checklist</button>
+        </div>`;
+    }
+
+    function renderDrums() {
+      return `
+        <div class="content-grid">
+          <div class="panel">
+            <p class="eyebrow">RHYTHM PRACTICE</p>
+            <h1 style="font-size:36px">Drum practice pad</h1>
+            <p>Tap the button for each clean stroke in your practice round. This is a manual counter, not a microphone-based detector.</p>
+            <div class="flashcard">
+              <div><p class="eyebrow">HITS COUNTED</p><div id="drum-count" class="flashcard-main">${state.drumHits}</div><p>Keep your shoulders relaxed and your strokes even.</p></div>
+            </div>
+            <div class="hero-actions"><button class="button primary" data-action="drum-hit">🥁 Count a hit</button><button class="button" data-action="drum-reset">Reset round</button></div>
+          </div>
+          <aside class="panel">
+            <p class="eyebrow">PRACTICE ROUND</p>
+            <h3>Try a simple structure</h3>
+            <ul class="list-clean">
+              <li>Warm up at a comfortable pace.</li>
+              <li>Play slowly with even strokes.</li>
+              <li>Rest briefly between rounds.</li>
+              <li>Record one thing to improve.</li>
+            </ul>
+            <div class="callout">Use hearing protection around loud drums. Stop if your hands, wrists or shoulders hurt.</div>
+          </aside>
+        </div>`;
+    }
+
+    function renderTempo() {
+      return `
+        <div class="content-grid">
+          <div class="panel">
+            <p class="eyebrow">TEMPO LAB</p>
+            <h1 style="font-size:36px">Find your pulse.</h1>
+            <p>Tap the button in time with a steady beat. The estimate uses the gaps between your recent taps.</p>
+            <div class="flashcard"><div><div id="tempo-bpm" class="flashcard-main">—</div><p>BPM estimate</p><p id="tempo-tap-count" class="muted-small">${state.tempoTaps.length} taps recorded</p></div></div>
+            <div class="hero-actions"><button class="button primary" data-action="tempo-tap">Tap the beat</button><button class="button" data-action="tempo-reset">Reset</button></div>
+          </div>
+          <aside class="panel">
+            <h3>Tempo practice</h3>
+            <ul class="list-clean">
+              <li>Tap at least four times for a steadier estimate.</li>
+              <li>Keep a consistent pulse rather than tapping faster.</li>
+              <li>Try counting groups of four.</li>
+            </ul>
+            <p class="muted-small">This tool estimates tempo from taps; it does not listen to audio.</p>
+          </aside>
+        </div>`;
+    }
+
+    function renderScoreboard() {
+      return `
+        <div class="panel">
+          <p class="eyebrow">MATCH TOOLS</p>
+          <h1 style="font-size:36px">Scoreboard</h1>
+          <p>Choose a game and use the buttons to track a casual match. The scores are temporary and reset when you reset the board.</p>
+          <div class="field" style="max-width:320px"><label for="sport-type">Sport</label><select id="sport-type"><option>Badminton</option><option>Basketball</option></select></div>
+          <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+            <div class="card" style="text-align:center"><p class="eyebrow">PLAYER / TEAM A</p><div id="score-a" class="flashcard-main">${state.scoreA}</div><div class="hero-actions" style="justify-content:center"><button class="button primary" data-action="score-add" data-side="A">＋ Point</button><button class="button small" data-action="score-sub" data-side="A">−</button></div></div>
+            <div class="card" style="text-align:center"><p class="eyebrow">PLAYER / TEAM B</p><div id="score-b" class="flashcard-main">${state.scoreB}</div><div class="hero-actions" style="justify-content:center"><button class="button primary" data-action="score-add" data-side="B">＋ Point</button><button class="button small" data-action="score-sub" data-side="B">−</button></div></div>
+          </div>
+          <h2 id="score-result" style="margin-top:24px">Ready to play?</h2>
+          <button class="button" style="margin-top:10px" data-action="score-reset">Reset scoreboard ↻</button>
+        </div>`;
+    }
+
+    function renderPracticePage() {
+      setBreadcrumbs([{ label: "Workspace", action: "go-home" }, { label: "Practice Tracker" }]);
+      const items = categories.flatMap(category => category.topics.map(topic => ({ ...topic, categoryTitle: category.title })));
+      const completed = storage.read("kurohana.completed", []);
+      const count = completed.length;
+      const percent = Math.round(count / items.length * 100);
+
+      appContent.innerHTML = `
+        <section class="hero">
+          <p class="eyebrow">PERSONAL PROGRESS</p>
+          <h1>Practice with purpose.</h1>
+          <p class="lead">Mark modules complete as you learn. Your checklist is stored locally in this browser, so it is not synchronised to other devices.</p>
+        </section>
+        <div class="section-heading"><div><p class="eyebrow">YOUR PROGRESS</p><h2>${count} of ${items.length} modules complete</h2></div><span class="tag">${percent}% complete</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div>
+        ${categories.map(category => `
+          <div class="section-heading"><div><p class="eyebrow">${escapeHTML(category.title.toUpperCase())}</p><h2>${escapeHTML(category.title)}</h2></div></div>
+          <div class="panel">
+            ${category.topics.map(topic => `<label class="check-row"><input type="checkbox" data-completion-id="${escapeHTML(topic.id)}" ${completed.includes(topic.id) ? "checked" : ""} /><span>${escapeHTML(topic.title)}</span><span class="muted-small" style="margin-left:auto">${completed.includes(topic.id) ? "Complete" : "Not complete"}</span></label>`).join("")}
+          </div>`).join("")}`;
+    }
+
+    function renderAbout() {
+      setBreadcrumbs([{ label: "Workspace", action: "go-home" }, { label: "About This Hub" }]);
+      appContent.innerHTML = `
+        <div class="content-grid">
+          <article class="panel article-content">
+            <p class="eyebrow">ABOUT KUROHANA</p>
+            <h1 style="font-size:40px">A space for curiosity.</h1>
+            <p class="lead">Kurohana is a personal knowledge hub designed to bring technical learning and creative interests together in one calm workspace.</p>
+            <h2>What this site does</h2>
+            <ul>
+              <li>Organises six interest areas into categories and topic pages.</li>
+              <li>Includes short learning notes, exercises and interactive tools.</li>
+              <li>Lets you search the library and track completion.</li>
+              <li>Saves selected notes and progress in local browser storage.</li>
+            </ul>
+            <h2>Privacy and limitations</h2>
+            <p>This is a front-end demo. There is no user account, server, cloud sync or remote database. Browser storage may be removed when site data is cleared. Do not store passwords, private records or sensitive information here.</p>
+          </article>
+          <aside class="panel">
+            <p class="eyebrow">TECH STACK</p>
+            <h3>Built with web fundamentals</h3>
+            <div class="tag-row"><span class="tag">Semantic HTML</span><span class="tag">CSS Grid</span><span class="tag">Responsive CSS</span><span class="tag">JavaScript</span><span class="tag">localStorage</span><span class="tag">Hash routing</span></div>
+            <div class="divider"></div>
+            <p class="muted-small">Next development step: split the app into modules, add automated tests, and introduce a backend only if account-based sync is needed.</p>
+          </aside>
+        </div>`;
+    }
+
+    function renderSearch() {
+      const query = state.search.trim().toLowerCase();
+      if (!query) return renderHome();
+
+      setBreadcrumbs([{ label: "Workspace", action: "go-home" }, { label: "Search" }]);
+
+      const matchedCategories = categories.filter(category =>
+        `${category.title} ${category.description} ${category.tags.join(" ")}`.toLowerCase().includes(query)
+      );
+      const matchedTopics = categories.flatMap(category =>
+        category.topics
+          .filter(topic => `${topic.title} ${topic.description} ${topic.tags.join(" ")} ${category.title}`.toLowerCase().includes(query))
+          .map(topic => ({ ...topic, categoryId: category.id }))
+      );
+
+      appContent.innerHTML = `
+        <p class="eyebrow">LIBRARY SEARCH</p>
+        <h1 style="font-size:38px">Results for “${escapeHTML(state.search)}”</h1>
+        <p class="lead">Search across categories, topics, descriptions and tags.</p>
+        ${matchedCategories.length ? `<div class="section-heading"><h2>Categories</h2></div><div class="grid category-grid">${matchedCategories.map(categoryCard).join("")}</div>` : ""}
+        ${matchedTopics.length ? `<div class="section-heading"><h2>Topics</h2></div><div class="grid topic-grid">${matchedTopics.map(topic => topicCard(topic, topic.categoryId)).join("")}</div>` : ""}
+        ${!matchedCategories.length && !matchedTopics.length ? `<div class="empty-state"><h2>No results found</h2><p>Try another keyword, such as Python, JLPT, mystery, rhythm or badminton.</p></div>` : ""}`;
+    }
+
+    function renderTopic(id) {
+      const topic = findTopic(id);
+      if (!topic) return renderHome();
+
+      const category = findCategory(topic.categoryId);
+      setBreadcrumbs([
+        { label: "Workspace", action: "go-home" },
+        { label: category.title, action: "go-category", id: category.id },
+        { label: topic.title }
+      ]);
+
+      let body = "";
+      switch (topic.type) {
+        case "quiz": body = renderQuiz(topic); break;
+        case "flashcards": body = renderFlashcards(topic); break;
+        case "kanji": body = renderKanji(); break;
+        case "projects": body = renderProjects(); break;
+        case "case": body = renderCase(); break;
+        case "logs": body = renderLogs(); break;
+        case "character": body = renderCharacterMaker(); break;
+        case "generator": body = renderGenerator(); break;
+        case "prompts": body = renderPrompts(); break;
+        case "notes": body = renderNotes(topic); break;
+        case "planner": body = renderPlanner(topic); break;
+        case "drums": body = renderDrums(); break;
+        case "tempo": body = renderTempo(); break;
+        case "scoreboard": body = renderScoreboard(); break;
+        default: body = renderArticle(topic, category);
+      }
+
+      appContent.innerHTML = `
+        <div class="section-heading" style="margin-top:0">
+          <div><p class="eyebrow">${escapeHTML(category.title.toUpperCase())} / MODULE</p><h2>${escapeHTML(topic.title)}</h2></div>
+          <button class="button small" data-action="go-category" data-id="${escapeHTML(category.id)}">← All ${escapeHTML(category.title)}</button>
+        </div>
+        ${body}`;
+    }
+
+    function render() {
+      document.querySelectorAll(".nav-link").forEach(link => {
+        link.classList.toggle("active",
+          (state.route.type === "home" && link.dataset.action === "go-home") ||
+          (state.route.type === "category" && link.dataset.id === state.route.id) ||
+          (state.route.type === "page" && link.dataset.id === state.route.id)
+        );
+      });
+
+      if (state.search.trim()) return renderSearch();
+
+      switch (state.route.type) {
+        case "category": return renderCategory(state.route.id);
+        case "topic": return renderTopic(state.route.id);
+        case "page":
+          if (state.route.id === "practice") return renderPracticePage();
+          if (state.route.id === "about") return renderAbout();
+          return renderHome();
+        default: return renderHome();
+      }
+    }
+
+    /* =========================================================
+       03. INTERACTIONS
+       One delegated listener handles dynamically rendered UI.
+    ========================================================= */
+
+    appContent.addEventListener("click", event => {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+
+      const { action, id } = button.dataset;
+
+      switch (action) {
+        case "go-home":
+          setRoute("home");
+          break;
+
+        case "go-category":
+          setRoute("category", id);
+          break;
+
+        case "go-topic":
+          setRoute("topic", id);
+          break;
+
+        case "go-page":
+          setRoute("page", id);
+          break;
+
+        case "toggle-complete": {
+          const completed = storage.read("kurohana.completed", []);
+          const next = completed.includes(id)
+            ? completed.filter(item => item !== id)
+            : [...completed, id];
+          storage.write("kurohana.completed", next);
+          showToast(next.includes(id) ? "Module marked complete ✓" : "Module marked incomplete.");
+          render();
+          break;
+        }
+
+        case "restart-quiz":
+          state.quizTopic = "";
+          state.quizIndex = 0;
+          state.quizScore = 0;
+          state.quizAnswered = false;
+          render();
+          break;
+
+        case "answer-quiz": {
+          if (state.quizAnswered) break;
+          const topic = findTopic(state.route.id);
+          const bank = quizBank[topic.quiz];
+          const question = bank[state.quizIndex];
+          const answer = Number(button.dataset.index);
+          state.quizAnswered = true;
+          if (answer === question.answer) state.quizScore++;
+          render();
+          const buttons = appContent.querySelectorAll(".quiz-option");
+          buttons.forEach((option, index) => {
+            option.disabled = true;
+            if (index === question.answer) option.classList.add("correct");
+            if (index === answer && answer !== question.answer) option.classList.add("incorrect");
+          });
+          const feedback = appContent.querySelector("#quiz-feedback");
+          if (feedback) feedback.textContent = answer === question.answer ? "Correct — nice work!" : "Not quite. Review the explanation below.";
+          break;
+        }
+
+        case "next-quiz":
+          state.quizIndex++;
+          state.quizAnswered = false;
+          render();
+          break;
+
+        case "reveal-flashcard":
+          state.flashRevealed = !state.flashRevealed;
+          render();
+          break;
+
+        case "flashcard-next":
+          state.flashIndex = (state.flashIndex + 1) % flashcards.length;
+          state.flashRevealed = false;
+          render();
+          break;
+
+        case "flashcard-prev":
+          state.flashIndex = (state.flashIndex - 1 + flashcards.length) % flashcards.length;
+          state.flashRevealed = false;
+          render();
+          break;
+
+        case "kanji-next":
+          state.kanjiIndex = (state.kanjiIndex + 1) % kanjiCards.length;
+          render();
+          break;
+
+        case "reveal-case":
+          appContent.querySelector("#case-evidence")?.classList.remove("hidden");
+          button.classList.add("hidden");
+          break;
+
+        case "save-project": {
+          const project = projectIdeas[Number(button.dataset.index)];
+          const saved = storage.read("kurohana.savedProjects", []);
+          if (saved.some(item => item.title === project.title)) {
+            showToast("That project is already saved.");
+          } else {
+            storage.write("kurohana.savedProjects", [...saved, project]);
+            showToast("Project idea saved ✓");
+          }
+          break;
+        }
+
+        case "generate-plot": {
+          const setting = plotSettings[Math.floor(Math.random() * plotSettings.length)];
+          const conflict = plotConflicts[Math.floor(Math.random() * plotConflicts.length)];
+          const complication = plotComplications[Math.floor(Math.random() * plotComplications.length)];
+          const output = appContent.querySelector("#plot-output");
+          if (output) {
+            output.dataset.plot = `In ${setting}, a story begins with ${conflict}. Then ${complication}.`;
+            output.textContent = output.dataset.plot;
+          }
+          break;
+        }
+
+        case "save-plot": {
+          const plot = appContent.querySelector("#plot-output")?.dataset.plot;
+          if (!plot) { showToast("Generate an idea first."); break; }
+          const saved = storage.read("kurohana.savedPrompts", []);
+          storage.write("kurohana.savedPrompts", [...saved, plot]);
+          showToast("Story idea saved ✓");
+          break;
+        }
+
+        case "random-prompt": {
+          const output = appContent.querySelector("#prompt-output");
+          if (output) {
+            output.textContent = promptDeck[Math.floor(Math.random() * promptDeck.length)];
+            output.dataset.prompt = output.textContent;
+          }
+          break;
+        }
+
+        case "save-prompt": {
+          const prompt = appContent.querySelector("#prompt-output")?.textContent;
+          if (!prompt) break;
+          const saved = storage.read("kurohana.savedPrompts", []);
+          storage.write("kurohana.savedPrompts", [...saved, prompt]);
+          showToast("Writing prompt saved ✓");
+          break;
+        }
+
+        case "drum-hit":
+          state.drumHits++;
+          appContent.querySelector("#drum-count").textContent = state.drumHits;
+          break;
+
+        case "drum-reset":
+          state.drumHits = 0;
+          appContent.querySelector("#drum-count").textContent = "0";
+          break;
+
+        case "tempo-tap": {
+          const now = Date.now();
+          state.tempoTaps = state.tempoTaps.filter(time => now - time < 4000);
+          state.tempoTaps.push(now);
+          if (state.tempoTaps.length > 8) state.tempoTaps.shift();
+          const bpm = state.tempoTaps.length >= 2
+            ? Math.round(60000 / ((state.tempoTaps[state.tempoTaps.length - 1] - state.tempoTaps[0]) / (state.tempoTaps.length - 1)))
+            : null;
+          appContent.querySelector("#tempo-bpm").textContent = bpm && bpm > 0 && bpm < 300 ? bpm : "—";
+          appContent.querySelector("#tempo-tap-count").textContent = `${state.tempoTaps.length} taps recorded`;
+          break;
+        }
+
+        case "tempo-reset":
+          state.tempoTaps = [];
+          appContent.querySelector("#tempo-bpm").textContent = "—";
+          appContent.querySelector("#tempo-tap-count").textContent = "0 taps recorded";
+          break;
+
+        case "score-add":
+        case "score-sub": {
+          const side = button.dataset.side;
+          const delta = action === "score-add" ? 1 : -1;
+          const key = side === "A" ? "scoreA" : "scoreB";
+          state[key] = Math.max(0, state[key] + delta);
+          appContent.querySelector("#score-a").textContent = state.scoreA;
+          appContent.querySelector("#score-b").textContent = state.scoreB;
+          updateScoreResult();
+          break;
+        }
+
+        case "score-reset":
+          state.scoreA = 0;
+          state.scoreB = 0;
+          appContent.querySelector("#score-a").textContent = "0";
+          appContent.querySelector("#score-b").textContent = "0";
+          updateScoreResult();
+          break;
+
+        case "reset-planner": {
+          storage.write(`kurohana.planner.${id}`, []);
+          render();
+          break;
+        }
+
+        case "save-notes": {
+          const key = `kurohana.notes.${id}`;
+          const title = appContent.querySelector("#notes-title")?.value || "";
+          const body = appContent.querySelector("#notes-body")?.value || "";
+          storage.write(`${key}.title`, title);
+          storage.write(key, body);
+          showToast("Notes saved in this browser ✓");
+          break;
+        }
+
+        case "clear-notes": {
+          const key = `kurohana.notes.${id}`;
+          storage.write(key, "");
+          storage.write(`${key}.title`, "");
+          render();
+          showToast("Notes cleared.");
+          break;
+        }
+
+        case "toggle-menu":
+          sidebar.classList.toggle("open");
+          break;
+      }
+    });
+
+    function updateScoreResult() {
+      const result = appContent.querySelector("#score-result");
+      if (!result) return;
+      if (state.scoreA === state.scoreB) result.textContent = "The score is level.";
+      else result.textContent = state.scoreA > state.scoreB ? "Player / Team A is ahead." : "Player / Team B is ahead.";
+    }
+
+    appContent.addEventListener("keydown", event => {
+      const card = event.target.closest(".clickable-card");
+      if (card && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        card.click();
+      }
+    });
+
+    appContent.addEventListener("change", event => {
+      const completionId = event.target.dataset.completionId;
+      if (completionId) {
+        const completed = storage.read("kurohana.completed", []);
+        const next = event.target.checked
+          ? [...new Set([...completed, completionId])]
+          : completed.filter(item => item !== completionId);
+        storage.write("kurohana.completed", next);
+        renderPracticePage();
+        return;
+      }
+
+      const plannerId = event.target.dataset.plannerId;
+      if (plannerId !== undefined) {
+        const topic = findTopic(state.route.id);
+        const key = `kurohana.planner.${topic.id}`;
+        const checked = [...appContent.querySelectorAll("[data-planner-id]:checked")]
+          .map(input => Number(input.dataset.plannerId));
+        storage.write(key, checked);
+        const total = appContent.querySelectorAll("[data-planner-id]").length;
+        const progress = appContent.querySelector("#planner-progress");
+        const bar = appContent.querySelector("#planner-bar");
+        if (progress) progress.textContent = `${checked.length} of ${total} tasks complete.`;
+        if (bar) bar.style.width = `${checked.length / total * 100}%`;
+        return;
+      }
+
+      if (event.target.id === "log-filter") {
+        state.logsFilter = event.target.value;
+        const searchValue = appContent.querySelector("#log-search")?.value || "";
+        state.logsSearch = searchValue;
+        renderTopic("log-lab");
+        return;
+      }
+    });
+
+    appContent.addEventListener("input", event => {
+      if (event.target.id === "log-search") {
+        state.logsSearch = event.target.value;
+        const cursor = event.target.selectionStart;
+        renderTopic("log-lab");
+        const input = appContent.querySelector("#log-search");
+        input?.focus();
+        if (input && cursor !== null) input.setSelectionRange(cursor, cursor);
+      }
+    });
+
+    appContent.addEventListener("submit", event => {
+      if (event.target.id !== "character-form") return;
+      event.preventDefault();
+      const data = new FormData(event.target);
+      const profile = {
+        name: String(data.get("name") || "").trim(),
+        role: String(data.get("role") || ""),
+        goal: String(data.get("goal") || "").trim(),
+        flaw: String(data.get("flaw") || "").trim(),
+        secret: String(data.get("secret") || "").trim()
+      };
+
+      const output = appContent.querySelector("#character-output");
+      if (!profile.name || !profile.goal) {
+        output.textContent = "Add a name and a main goal first.";
+        return;
+      }
+
+      output.innerHTML = `
+        <span class="tag">${escapeHTML(profile.role)}</span>
+        <h2 style="margin-top:15px">${escapeHTML(profile.name)}</h2>
+        <h3>Goal</h3><p>${escapeHTML(profile.goal)}</p>
+        <h3>Flaw</h3><p>${escapeHTML(profile.flaw || "Not defined yet.")}</p>
+        <h3>Secret / contradiction</h3><p>${escapeHTML(profile.secret || "Still to be discovered.")}</p>
+        <div class="callout">Story question: what choice would force this character to confront their flaw?</div>
+        <button class="button small" id="save-character">Save profile</button>`;
+
+      document.getElementById("save-character")?.addEventListener("click", () => {
+        const saved = storage.read("kurohana.characters", []);
+        storage.write("kurohana.characters", [...saved, profile]);
+        showToast("Character profile saved ✓");
+      });
+    });
+
+    searchInput.addEventListener("input", event => {
+      state.search = event.target.value;
+      render();
+    });
+
+    document.addEventListener("click", event => {
+      const menuButton = event.target.closest('[data-action="toggle-menu"]');
+      if (menuButton) sidebar.classList.toggle("open");
+
+      const homeButton = event.target.closest('[data-action="go-home"]');
+      if (homeButton && !homeButton.closest("#app-content")) setRoute("home");
+
+      const categoryButton = event.target.closest('[data-action="go-category"]');
+      if (categoryButton && !categoryButton.closest("#app-content")) setRoute("category", categoryButton.dataset.id);
+
+      const pageButton = event.target.closest('[data-action="go-page"]');
+      if (pageButton && !pageButton.closest("#app-content")) setRoute("page", pageButton.dataset.id);
+    });
+
+    window.addEventListener("popstate", routeFromHash);
+    window.addEventListener("hashchange", () => {
+      const target = window.location.hash.slice(1);
+      const expected = state.route.type === "home" ? "home" : `${state.route.type}/${state.route.id}`;
+      if (target !== expected) routeFromHash();
+    });
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Start from the URL route so browser back/forward and shared hashes work.
+    routeFromHash();
+  </script>
+</body>
+</html>
